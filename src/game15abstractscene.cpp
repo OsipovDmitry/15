@@ -20,7 +20,6 @@ Game15AbstractScene::Game15AbstractScene(Game15Ptr pGame15) :
 
 void Game15AbstractScene::activate()
 {
-
 }
 
 void Game15AbstractScene::update(uint64_t time, uint32_t dt)

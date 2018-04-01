@@ -96,9 +96,9 @@ ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glReadPixels(x, viewport[3]-y-1, 1, 1, GL_BGR, GL_UNSIGNED_BYTE, &objectId);
 
-	uint8_t r = (objectId & 0x00FF0000) >> 16;
-	uint8_t g = (objectId & 0x0000FF00) >> 8;
-	uint8_t b = (objectId & 0x000000FF);
+//	uint8_t r = (objectId & 0x00FF0000) >> 16;
+//	uint8_t g = (objectId & 0x0000FF00) >> 8;
+//	uint8_t b = (objectId & 0x000000FF);
 
 	funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
 	funcs->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
