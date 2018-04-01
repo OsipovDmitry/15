@@ -22,7 +22,7 @@ using AbstractGameWPtr = std::weak_ptr<AbstractGame>;
 
 class GameWidget : public QGLWidget {
 public:
-    GameWidget(QWidget *parent);
+    GameWidget(QWidget *parent = nullptr);
     ~GameWidget();
 
     graphics::ControllerPtr graphicsController() const;
