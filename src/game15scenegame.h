@@ -3,11 +3,14 @@
 
 #include <vector>
 
+#include "glm/vec2.hpp"
+
 #include "game15abstractscene.h"
 
 namespace graphics {
 
 class Model;
+
 using ModelPtr = std::shared_ptr<Model>;
 
 }
@@ -27,12 +30,29 @@ protected:
 	virtual void mouseWheel(int32_t dir) override;
 
 private:
+	enum class State : uint8_t {
+		Wait,
+		Animation
+	};
+
 	Game15SceneGame(Game15Ptr pGame15);
 	void initialize(int32_t gameConst);
+	void moveTable(int32_t x, int32_t y);
+	bool checkWin() const;
 
 	std::vector<graphics::ModelPtr> m_table;
 	float m_cameraLat, m_cameraLong, m_cameraDist;
 	int32_t m_gameConst;
+	State m_state;
+
+	struct {
+		std::vector<graphics::ModelPtr> blocks;
+		std::vector<glm::vec2> blockPoses;
+		glm::vec2 dir;
+		int32_t lifeTime;
+	} m_animation;
+
+	static const int32_t s_animTime = 500;
 
 	friend class Game15;
 };

@@ -41,7 +41,7 @@ void Game15::initialize()
 	m_meshes[static_cast<size_t>(GameMeshId::Block)] = m_pRenderer->createMesh(blockVertices, blockIndices);
 
 	auto pGameScene = new Game15SceneGame(shared_from_this());
-	pGameScene->initialize(5);
+	pGameScene->initialize(3);
 	m_scenes[static_cast<size_t>(GameSceneId::Game)] = std::unique_ptr<Game15AbstractScene>(pGameScene);
 
 	setCurrentScene(GameSceneId::Game);

@@ -23,7 +23,7 @@ namespace game {
 enum class GameMaterialId : uint32_t {
     Background,
     Block0,
-    BlockCount = Block0 + 99,
+	BlockCount = Block0 + 99,
     Count,
 };
 

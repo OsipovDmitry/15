@@ -25,10 +25,12 @@ public:
     glm::vec3 angles() const;
     glm::vec3 scale() const;
     glm::mat4x4 transformMatrix() const;
+	int32_t userData() const;
 
     void setPosition(const glm::vec3& val);
     void setAngles(const glm::vec3& val);
     void setScale(const glm::vec3& val);
+	void setUserData(int32_t val);
 
 private:
     Model(ScenePtr pScene, MaterialPtr pMaterial, MeshPtr pMesh);
@@ -38,6 +40,8 @@ private:
     MeshPtr m_pMesh;
 
     glm::vec3 m_position, m_angles, m_scale;
+
+	int32_t m_userData;
 
     friend class Scene;
 };

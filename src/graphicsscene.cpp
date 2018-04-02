@@ -48,7 +48,7 @@ ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
 
 	glGenTextures(1, &colorTexture);
 	glBindTexture(GL_TEXTURE_2D, colorTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, viewport[2], viewport[3], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewport[2], viewport[3], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -80,11 +80,12 @@ ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 		funcs->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pModel->m_pMesh->m_indexBuffer);
 
-		uint8_t r = (objectId & 0x00FF0000) >> 16;
-		uint8_t g = (objectId & 0x0000FF00) >> 8;
-		uint8_t b = (objectId & 0x000000FF);
+		uint8_t r = (objectId & 0xFF000000) >> 24;
+		uint8_t g = (objectId & 0x00FF0000) >> 16;
+		uint8_t b = (objectId & 0x0000FF00) >> 8;
+		uint8_t a = (objectId & 0x000000FF);
 		++objectId;
-		glColor3ub(r,g,b);
+		glColor4ub(r,g,b,a);
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -92,13 +93,11 @@ ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
 		glDrawElements(GL_TRIANGLES, pModel->m_pMesh->m_numIndices, GL_UNSIGNED_INT, 0);
 		glPopMatrix();
 	}
+	glColor4ub(255,255,255,255);
+	objectId = -1;
 
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(x, viewport[3]-y-1, 1, 1, GL_BGR, GL_UNSIGNED_BYTE, &objectId);
-
-//	uint8_t r = (objectId & 0x00FF0000) >> 16;
-//	uint8_t g = (objectId & 0x0000FF00) >> 8;
-//	uint8_t b = (objectId & 0x000000FF);
+	glReadPixels(x, viewport[3]-y-1, 1, 1, GL_ABGR_EXT, GL_UNSIGNED_BYTE, &objectId);
 
 	funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
 	funcs->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
@@ -106,12 +105,19 @@ ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
 	funcs->glDeleteFramebuffers(1, &framebuffer);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glGenTextures(1, &colorTexture);
+	glDeleteTextures(1, &colorTexture);
 
 	funcs->glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	funcs->glGenRenderbuffers(1, &depthRenderbuffer);
+	funcs->glDeleteRenderbuffers(1, &depthRenderbuffer);
 
-	return nullptr;
+
+	if (objectId == -1)
+		return nullptr;
+	else {
+		auto iter = objectsList.begin();
+		std::advance(iter, objectId);
+		return *iter;
+	}
 }
 
 Scene::Scene(ControllerPtr pController) :

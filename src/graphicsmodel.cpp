@@ -34,6 +34,11 @@ glm::mat4x4 Model::transformMatrix() const
 			glm::scale(glm::mat4x4(), m_scale);
 }
 
+int32_t Model::userData() const
+{
+	return m_userData;
+}
+
 void Model::setPosition(const glm::vec3& val)
 {
 	m_position = val;
@@ -49,13 +54,19 @@ void Model::setScale(const glm::vec3& val)
 	m_scale = val;
 }
 
+void Model::setUserData(int32_t val)
+{
+	m_userData = val;
+}
+
 Model::Model(ScenePtr pScene, MaterialPtr pMaterial, MeshPtr pMesh) :
 	m_pScene(pScene),
 	m_pMaterial(pMaterial),
 	m_pMesh(pMesh),
 	m_position(),
 	m_angles(),
-	m_scale(1.0f, 1.0f, 1.0f)
+	m_scale(1.0f, 1.0f, 1.0f),
+	m_userData(-1)
 {
 }
 
