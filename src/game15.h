@@ -22,13 +22,25 @@ namespace game {
 
 enum class GameMaterialId : uint32_t {
     Background,
+	Wood,
     Block0,
 	BlockCount = Block0 + 99,
+	ButtonStart,
+	ButtonToMenu,
+	Button2x2,
+	Button3x3,
+	Button4x4,
+	Button5x5,
+	Button6x6,
+	Button7x7,
+	Button8x8,
+	Button9x9,
+	Button10x10,
     Count,
 };
 
 enum class GameMeshId : uint32_t {
-    QuadXY,
+	QuadXY,
     Block,
     Count,
 };

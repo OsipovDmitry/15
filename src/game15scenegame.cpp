@@ -6,6 +6,7 @@
 #include "graphicsscene.h"
 #include "graphicsmodel.h"
 
+#include "meshdata.h"
 #include "game15.h"
 #include "game15scenegame.h"
 
@@ -43,6 +44,7 @@ void Game15SceneGame::update(uint64_t time, uint32_t dt)
 			m_animation.blockPoses.clear();
 			m_animation.blocks.clear();
 			m_state = State::Wait;
+			calibrate();
 			if (checkWin()) {
 				int i = 13;
 			}
@@ -58,61 +60,57 @@ void Game15SceneGame::mouseClick(int32_t x, int32_t y, bool leftButton, bool rig
 		if (pObject && (objIter != m_table.end())) {
 			int32_t objX = (std::distance(m_table.begin(), objIter)) % m_gameConst;
 			int32_t objY = (std::distance(m_table.begin(), objIter)) / m_gameConst;
+			int32_t emptyX, emptyY;
+			findEmpty(emptyX, emptyY);
 			bool flag = false;
-			for (int32_t i = 0; i < m_gameConst; ++i) {
-				if (m_table[objY*m_gameConst+i] == nullptr) {
-					flag = true;
-					if (i > objX) {
-						m_animation.dir = glm::vec2(1.0f,0.0f);
-						for (int32_t j = objX; j < i; ++j) {
-							auto pBlock = m_table[objY*m_gameConst+j];
-							m_animation.blocks.push_back(pBlock);
-							m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
-						}
-						for (int32_t j = i; j > objX; --j)
-							m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j-1)];
-						m_table[objY*m_gameConst+objX] = nullptr;
+			if (m_table[objY*m_gameConst+emptyX] == nullptr) {
+				flag = true;
+				if (emptyX > objX) {
+					m_animation.dir = glm::vec2(1.0f,0.0f);
+					for (int32_t j = objX; j < emptyX; ++j) {
+						auto pBlock = m_table[objY*m_gameConst+j];
+						m_animation.blocks.push_back(pBlock);
+						m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
 					}
-					else if (i < objX) {
-						m_animation.dir = glm::vec2(-1.0f,0.0f);
-						for (int32_t j = objX; j > i; --j) {
-							auto pBlock = m_table[objY*m_gameConst+j];
-							m_animation.blocks.push_back(pBlock);
-							m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
-						}
-						for (int32_t j = i; j < objX; ++j)
-							m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j+1)];
-						m_table[objY*m_gameConst+objX] = nullptr;
-					}
-
-					break;
+					for (int32_t j = emptyX; j > objX; --j)
+						m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j-1)];
+					m_table[objY*m_gameConst+objX] = nullptr;
 				}
-				else if (m_table[i*m_gameConst+objX] == nullptr) {
-					flag = true;
-					if (i > objY) {
-						m_animation.dir = glm::vec2(0.0f,1.0f);
-						for (int32_t j = objY; j < i; ++j) {
-							auto pBlock = m_table[j*m_gameConst+objX];
-							m_animation.blocks.push_back(pBlock);
-							m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
-						}
-						for (int32_t j = i; j > objY; --j)
-							m_table[j*m_gameConst+objX] = m_table[(j-1)*m_gameConst+objX];
-						m_table[objY*m_gameConst+objX] = nullptr;
+				else if (emptyX < objX) {
+					m_animation.dir = glm::vec2(-1.0f,0.0f);
+					for (int32_t j = objX; j > emptyX; --j) {
+						auto pBlock = m_table[objY*m_gameConst+j];
+						m_animation.blocks.push_back(pBlock);
+						m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
 					}
-					else if (i < objY) {
-						m_animation.dir = glm::vec2(0.0f,-1.0f);
-						for (int32_t j = objY; j > i; --j) {
-							auto pBlock = m_table[j*m_gameConst+objX];
-							m_animation.blocks.push_back(pBlock);
-							m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
-						}
-						for (int32_t j = i; j < objY; ++j)
-							m_table[j*m_gameConst+objX] = m_table[(j+1)*m_gameConst+objX];
-						m_table[objY*m_gameConst+objX] = nullptr;
+					for (int32_t j = emptyX; j < objX; ++j)
+						m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j+1)];
+					m_table[objY*m_gameConst+objX] = nullptr;
+				}
+			}
+			else if (m_table[emptyY*m_gameConst+objX] == nullptr) {
+				flag = true;
+				if (emptyY > objY) {
+					m_animation.dir = glm::vec2(0.0f,1.0f);
+					for (int32_t j = objY; j < emptyY; ++j) {
+						auto pBlock = m_table[j*m_gameConst+objX];
+						m_animation.blocks.push_back(pBlock);
+						m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
 					}
-
-					break;
+					for (int32_t j = emptyY; j > objY; --j)
+						m_table[j*m_gameConst+objX] = m_table[(j-1)*m_gameConst+objX];
+					m_table[objY*m_gameConst+objX] = nullptr;
+				}
+				else if (emptyY < objY) {
+					m_animation.dir = glm::vec2(0.0f,-1.0f);
+					for (int32_t j = objY; j > emptyY; --j) {
+						auto pBlock = m_table[j*m_gameConst+objX];
+						m_animation.blocks.push_back(pBlock);
+						m_animation.blockPoses.push_back(glm::vec2(pBlock->position().x, pBlock->position().z));
+					}
+					for (int32_t j = emptyY; j < objY; ++j)
+						m_table[j*m_gameConst+objX] = m_table[(j+1)*m_gameConst+objX];
+					m_table[objY*m_gameConst+objX] = nullptr;
 				}
 			}
 
@@ -162,8 +160,10 @@ void Game15SceneGame::initialize(int32_t gameConst)
 
 	m_gameConst = gameConst;
 	auto pGame15 = m_pGame15.lock();
+	auto pRenderer = pGame15->graphicsController();
 
 	m_pGraphicsScene->addModel(graphics::SceneLayer::Background, pGame15->material(GameMaterialId::Background), pGame15->mesh(GameMeshId::QuadXY));
+	m_pGraphicsScene->addModel(graphics::SceneLayer::Objects, pGame15->material(GameMaterialId::Wood), pRenderer->createMesh(tableVertices(gameConst), tableIndices));
 
 	for (auto i = 0; i < gameConst*gameConst-1; ++i) {
 		auto pBlockModel = m_pGraphicsScene->addModel(graphics::SceneLayer::Objects, pGame15->material(static_cast<GameMaterialId>(static_cast<uint32_t>(GameMaterialId::Block0)+i)), pGame15->mesh(GameMeshId::Block));
@@ -172,55 +172,64 @@ void Game15SceneGame::initialize(int32_t gameConst)
 	}
 	m_table.push_back(nullptr);
 
-	for (int32_t i = 0; i < 10000; ++i)
-		moveTable(rand()%m_gameConst, rand()%m_gameConst);
-	if (checkWin())
-		moveTable(rand()%m_gameConst, rand()%m_gameConst);
-
-	for (auto i = 0; i < gameConst*gameConst; ++i) {
-		if (m_table[i] == nullptr)
-			continue;
-		m_table[i]->setPosition(glm::vec3(i%gameConst-gameConst/2.0f+0.5f, 0, i/gameConst-gameConst/2.0f+0.5f));
+	for (int32_t i = 0; i < 1000; ++i) {
+		int32_t emptyX, emptyY;
+		findEmpty(emptyX, emptyY);
+		if (rand()%2)
+			moveTable(emptyX, rand()%m_gameConst);
+		else
+			moveTable(rand()%m_gameConst, emptyY);
 	}
+
+	calibrate();
 
 	m_cameraLat = 45.0f;
 	m_cameraLong = 330.0f;
-	m_cameraDist = gameConst*0.9f;
+	m_cameraDist = m_gameConst/1.2f+1;
 	m_state = State::Wait;
 }
 
 void Game15SceneGame::moveTable(int32_t objX, int32_t objY)
 {
-	for (int32_t i = 0; i < m_gameConst; ++i) {
-		if (m_table[objY*m_gameConst+i] == nullptr) {
-			if (i > objX) {
-				for (int32_t j = i; j > objX; --j)
-					m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j-1)];
-				m_table[objY*m_gameConst+objX] = nullptr;
-			}
-			else if (i < objX) {
-				for (int32_t j = i; j < objX; ++j)
-					m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j+1)];
-				m_table[objY*m_gameConst+objX] = nullptr;
-			}
-
-			break;
+	int32_t emptyX, emptyY;
+	findEmpty(emptyX, emptyY);
+	if (m_table[objY*m_gameConst+emptyX] == nullptr) {
+		if (emptyX > objX) {
+			for (int32_t j = emptyX; j > objX; --j)
+				m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j-1)];
+			m_table[objY*m_gameConst+objX] = nullptr;
 		}
-		else if (m_table[i*m_gameConst+objX] == nullptr) {
-			if (i > objY) {
-				for (int32_t j = i; j > objY; --j)
-					m_table[j*m_gameConst+objX] = m_table[(j-1)*m_gameConst+objX];
-				m_table[objY*m_gameConst+objX] = nullptr;
-			}
-			else if (i < objY) {
-				for (int32_t j = i; j < objY; ++j)
-					m_table[j*m_gameConst+objX] = m_table[(j+1)*m_gameConst+objX];
-				m_table[objY*m_gameConst+objX] = nullptr;
-			}
-
-			break;
+		else if (emptyX < objX) {
+			for (int32_t j = emptyX; j < objX; ++j)
+				m_table[objY*m_gameConst+j] = m_table[objY*m_gameConst+(j+1)];
+			m_table[objY*m_gameConst+objX] = nullptr;
 		}
 	}
+	else if (m_table[emptyY*m_gameConst+objX] == nullptr) {
+		if (emptyY > objY) {
+			for (int32_t j = emptyY; j > objY; --j)
+				m_table[j*m_gameConst+objX] = m_table[(j-1)*m_gameConst+objX];
+			m_table[objY*m_gameConst+objX] = nullptr;
+		}
+		else if (emptyY < objY) {
+			for (int32_t j = emptyY; j < objY; ++j)
+				m_table[j*m_gameConst+objX] = m_table[(j+1)*m_gameConst+objX];
+			m_table[objY*m_gameConst+objX] = nullptr;
+		}
+	}
+}
+
+void Game15SceneGame::findEmpty(int32_t& x, int32_t& y)
+{
+	for (int32_t i = 0; i < m_gameConst*m_gameConst; ++i) {
+		if (m_table[i] == nullptr) {
+			x = i % m_gameConst;
+			y = i / m_gameConst;
+			return;
+		}
+	}
+	x = -1;
+	y = -1;
 }
 
 bool Game15SceneGame::checkWin() const
@@ -235,6 +244,15 @@ bool Game15SceneGame::checkWin() const
 	}
 
 	return true;
+}
+
+void Game15SceneGame::calibrate()
+{
+	for (int i = 0; i < m_gameConst*m_gameConst; ++i) {
+		if (m_table[i] == nullptr)
+			continue;
+		m_table[i]->setPosition(glm::vec3(i%m_gameConst-m_gameConst/2.0f+0.5f, 0, i/m_gameConst-m_gameConst/2.0f+0.5f));
+	}
 }
 
 }

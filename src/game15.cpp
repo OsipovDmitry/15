@@ -23,6 +23,7 @@ Game15::Game15(graphics::ControllerPtr pRenderer) :
 void Game15::initialize()
 {
 	m_materials[static_cast<size_t>(GameMaterialId::Background)] = m_pRenderer->createMaterial(":/res/background.jpg");
+	m_materials[static_cast<size_t>(GameMaterialId::Wood)] = m_pRenderer->createMaterial(":/res/wood.png");
 	for (size_t i = 0; i < static_cast<size_t>(GameMaterialId::BlockCount)-static_cast<size_t>(GameMaterialId::Block0); ++i) {
 		QImage image(":/res/block.png");
 		QPainter painter(&image);
@@ -41,7 +42,7 @@ void Game15::initialize()
 	m_meshes[static_cast<size_t>(GameMeshId::Block)] = m_pRenderer->createMesh(blockVertices, blockIndices);
 
 	auto pGameScene = new Game15SceneGame(shared_from_this());
-	pGameScene->initialize(3);
+	pGameScene->initialize(10);
 	m_scenes[static_cast<size_t>(GameSceneId::Game)] = std::unique_ptr<Game15AbstractScene>(pGameScene);
 
 	setCurrentScene(GameSceneId::Game);

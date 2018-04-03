@@ -38,7 +38,9 @@ private:
 	Game15SceneGame(Game15Ptr pGame15);
 	void initialize(int32_t gameConst);
 	void moveTable(int32_t x, int32_t y);
+	void findEmpty(int32_t& x, int32_t& y);
 	bool checkWin() const;
+	void calibrate();
 
 	std::vector<graphics::ModelPtr> m_table;
 	float m_cameraLat, m_cameraLong, m_cameraDist;
