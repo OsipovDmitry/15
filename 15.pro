@@ -13,7 +13,10 @@ HEADERS += \
     src/game15.h \
 	src/game15abstractscene.h \
 	src/game15scenegame.h \
-    src/gamewidget.h
+    src/gamewidget.h \
+    src/game15scenemenu.h \
+    src/game15sceneselectlevel.h \
+    src/game15scenevictory.h
 
 SOURCES += \
     src/graphicscontroller.cpp \
@@ -26,7 +29,10 @@ SOURCES += \
 	src/game15.cpp \
 	src/game15abstractscene.cpp \
 	src/game15scenegame.cpp \
-	src/main.cpp
+	src/main.cpp \
+    src/game15scenemenu.cpp \
+    src/game15sceneselectlevel.cpp \
+    src/game15scenevictory.cpp
 
 RESOURCES += \
 		15.qrc

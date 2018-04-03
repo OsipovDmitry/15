@@ -27,6 +27,8 @@ enum class GameMaterialId : uint32_t {
 	BlockCount = Block0 + 99,
 	ButtonStart,
 	ButtonToMenu,
+	ButtonBack,
+	ButtonExit,
 	Button2x2,
 	Button3x3,
 	Button4x4,
@@ -36,17 +38,23 @@ enum class GameMaterialId : uint32_t {
 	Button8x8,
 	Button9x9,
 	Button10x10,
+	ButtonVictory,
+	ButtonCount,
     Count,
 };
 
 enum class GameMeshId : uint32_t {
 	QuadXY,
     Block,
+	Button,
     Count,
 };
 
 enum class GameSceneId : uint32_t {
+	Menu,
+	SelectLevel,
     Game,
+	Victory,
     Count
 };
 
@@ -63,6 +71,8 @@ public:
     graphics::MaterialPtr material(GameMaterialId id) const;
     graphics::MeshPtr mesh(GameMeshId id) const;
 
+	void initGame(int32_t gameConst);
+	void exit();
     void setCurrentScene(GameSceneId id);
 
     static Game15Ptr createGame15(graphics::ControllerPtr pRenderer);

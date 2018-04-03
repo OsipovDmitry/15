@@ -65,10 +65,10 @@ ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
 	glDepthMask(GL_TRUE);
 
 	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(glm::value_ptr(glm::perspective(glm::half_pi<float>(), (float)viewport[2]/(float)viewport[3], 0.5f, 1000.0f)));
+	glLoadMatrixf(glm::value_ptr(projMatrix(layer)));
 
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(m_viewMatrix));
+	glLoadMatrixf(glm::value_ptr(viewMatrix(layer)));
 
 	auto& objectsList = m_objects[static_cast<size_t>(layer)];
 	uint32_t objectId = 0;
@@ -133,22 +133,24 @@ void Scene::render() const
 	using RenderFunc = void (Scene::*)(const std::list<ModelPtr>&) const;
 	static const RenderFunc funcs[] = {
 		&Scene::renderBackground,
-		&Scene::renderObjects
+		&Scene::renderObjects,
+		&Scene::renderGUI
 	};
 
-	for (size_t i = 0; i < static_cast<size_t>(SceneLayer::Count); ++i)
+	for (size_t i = 0; i < static_cast<size_t>(SceneLayer::Count); ++i) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadMatrixf(glm::value_ptr(projMatrix(static_cast<SceneLayer>(i))));
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadMatrixf(glm::value_ptr(viewMatrix(static_cast<SceneLayer>(i))));
+
 		(this->*funcs[i])(m_objects[i]);
+	}
 }
 
 void Scene::renderBackground(const std::list<ModelPtr>& listModels) const
 {
-	glDepthMask(GL_FALSE);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glDisable(GL_DEPTH_TEST);
 
 	for (auto pModel: listModels)
 		renderModel(pModel);
@@ -156,19 +158,20 @@ void Scene::renderBackground(const std::list<ModelPtr>& listModels) const
 
 void Scene::renderObjects(const std::list<ModelPtr>& listModels) const
 {
-	auto viewport = m_pController->viewport();
-
+	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(glm::value_ptr(glm::perspective(glm::half_pi<float>(), (float)viewport[2]/(float)viewport[3], 0.5f, 1000.0f)));
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(m_viewMatrix));
 
 	for (auto pModel: listModels)
 		renderModel(pModel);
 
+}
+
+void Scene::renderGUI(const std::list<ModelPtr>& listModels) const
+{
+	glDisable(GL_DEPTH_TEST);
+
+	for (auto pModel: listModels)
+		renderModel(pModel);
 }
 
 void Scene::renderModel(ModelPtr pModel) const
@@ -193,6 +196,34 @@ void Scene::renderModel(ModelPtr pModel) const
 	glDrawElements(GL_TRIANGLES, pModel->m_pMesh->m_numIndices, GL_UNSIGNED_INT, 0);
 
 	glPopMatrix();
+}
+
+glm::mat4x4 Scene::viewMatrix(SceneLayer layer) const
+{
+	switch (layer) {
+		case SceneLayer::Background : return glm::mat4x4();
+		case SceneLayer::Objects: return m_viewMatrix;
+		case SceneLayer::GUI: return glm::mat4x4();
+	}
+	return glm::mat4x4();
+}
+
+glm::mat4x4 Scene::projMatrix(SceneLayer layer) const
+{
+	auto viewport = m_pController->viewport();
+
+	switch (layer) {
+		case SceneLayer::Background : return glm::mat4x4();
+		case SceneLayer::Objects: return glm::perspective(0.4f*glm::pi<float>(), (float)viewport[2]/(float)viewport[3], 0.5f, 100.0f);
+		case SceneLayer::GUI: {
+			const auto aspect = (float)viewport[2]/(float)viewport[3];
+			if (aspect >= 1.0f)
+				return glm::ortho(-aspect, aspect, -1.0f, 1.0f);
+			else
+				return glm::ortho(-1.0f, 1.0f, -1.0f/aspect, 1.0f/aspect);
+		}
+	}
+	return glm::mat4x4();
 }
 
 }

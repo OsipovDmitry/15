@@ -116,7 +116,16 @@ const std::vector<uint32_t> tableIndices {
 	40,41,42, 42,43,40,
 	44,45,46, 46,47,44,
 	48,49,50, 50,51,48
+};
 
+const std::vector<float> buttonVertices {
+	-0.2f, +0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+	-0.2f, -0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+	+0.2f, -0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+	+0.2f, +0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+};
+const std::vector<uint32_t> buttonIndices {
+	0,1,2, 2,3,0
 };
 
 

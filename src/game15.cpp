@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <QStaticText>
 #include <QFontMetrics>
+#include <QApplication>
 
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -12,8 +13,22 @@
 #include "game15.h"
 #include "meshdata.h"
 #include "game15scenegame.h"
+#include "game15scenemenu.h"
+#include "game15sceneselectlevel.h"
+#include "game15scenevictory.h"
 
 namespace game {
+
+namespace {
+const std::array<QString, static_cast<size_t>(GameMaterialId::ButtonCount)-static_cast<size_t>(GameMaterialId::ButtonStart)> buttonLabels {
+	"Start",
+	"To menu",
+	"Back",
+	"Exit",
+	"2x2", "3x3", "4x4", "5x5", "6x6", "7x7", "8x8", "9x9", "10x10",
+	"Victory"
+};
+}
 
 Game15::Game15(graphics::ControllerPtr pRenderer) :
 	AbstractGame(pRenderer)
@@ -38,14 +53,37 @@ void Game15::initialize()
 		m_materials[static_cast<size_t>(GameMaterialId::Block0)+i] = m_pRenderer->createMaterial(image);
 	}
 
+	for (size_t i = 0; i < static_cast<size_t>(GameMaterialId::ButtonCount)-static_cast<size_t>(GameMaterialId::ButtonStart); ++i) {
+		QImage image(":/res/button.png");
+		QPainter painter(&image);
+		QFont font = painter.font();
+		font.setPixelSize(52);
+		font.setBold(true);
+		painter.setFont(font);
+		painter.setPen(QColor(0,0,0));
+		QFontMetrics fontMetrics(font);
+		const QString str = buttonLabels[i];
+		painter.drawStaticText((image.width()-fontMetrics.width(str))/2, (image.height()-fontMetrics.height())/2, QStaticText(str));
+		m_materials[static_cast<size_t>(GameMaterialId::ButtonStart)+i] = m_pRenderer->createMaterial(image);
+	}
+
 	m_meshes[static_cast<size_t>(GameMeshId::QuadXY)] = m_pRenderer->createMesh(quadXYVertices, quadXYIndices);
 	m_meshes[static_cast<size_t>(GameMeshId::Block)] = m_pRenderer->createMesh(blockVertices, blockIndices);
+	m_meshes[static_cast<size_t>(GameMeshId::Button)] = m_pRenderer->createMesh(buttonVertices, buttonIndices);
 
 	auto pGameScene = new Game15SceneGame(shared_from_this());
-	pGameScene->initialize(10);
 	m_scenes[static_cast<size_t>(GameSceneId::Game)] = std::unique_ptr<Game15AbstractScene>(pGameScene);
 
-	setCurrentScene(GameSceneId::Game);
+	auto pMenuScene = new Game15SceneMenu(shared_from_this());
+	m_scenes[static_cast<size_t>(GameSceneId::Menu)] = std::unique_ptr<Game15AbstractScene>(pMenuScene);
+
+	auto pSelectLevelScene = new Game15SceneSelectLevel(shared_from_this());
+	m_scenes[static_cast<size_t>(GameSceneId::SelectLevel)] = std::unique_ptr<Game15AbstractScene>(pSelectLevelScene);
+
+	auto pVictoryScene = new Game15SceneVictory(shared_from_this());
+	m_scenes[static_cast<size_t>(GameSceneId::Victory)] = std::unique_ptr<Game15AbstractScene>(pVictoryScene);
+
+	setCurrentScene(GameSceneId::Menu);
 }
 
 Game15::~Game15()
@@ -61,6 +99,18 @@ graphics::MaterialPtr Game15::material(GameMaterialId id) const
 graphics::MeshPtr Game15::mesh(GameMeshId id) const
 {
 	return m_meshes[static_cast<size_t>(id)];
+}
+
+void Game15::initGame(int32_t gameConst)
+{
+	auto pGameScene = std::dynamic_pointer_cast<Game15SceneGame>(m_scenes[static_cast<size_t>(GameSceneId::Game)]);
+	if (pGameScene)
+		pGameScene->initialize(gameConst);
+}
+
+void Game15::exit()
+{
+	QApplication::exit(0);
 }
 
 void Game15::setCurrentScene(GameSceneId id)

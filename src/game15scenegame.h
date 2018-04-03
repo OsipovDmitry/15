@@ -10,7 +10,6 @@
 namespace graphics {
 
 class Model;
-
 using ModelPtr = std::shared_ptr<Model>;
 
 }
@@ -43,6 +42,7 @@ private:
 	void calibrate();
 
 	std::vector<graphics::ModelPtr> m_table;
+	graphics::ModelPtr m_pToMenuButton;
 	float m_cameraLat, m_cameraLong, m_cameraDist;
 	int32_t m_gameConst;
 	State m_state;

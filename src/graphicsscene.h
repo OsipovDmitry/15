@@ -26,6 +26,7 @@ using ModelPtr = std::shared_ptr<Model>;
 enum class SceneLayer : uint8_t {
 	Background,
 	Objects,
+	GUI,
 	Count,
 };
 
@@ -46,7 +47,11 @@ private:
 	void render() const;
 	void renderBackground(const std::list<ModelPtr>& listModels) const;
 	void renderObjects(const std::list<ModelPtr>& listModels) const;
+	void renderGUI(const std::list<ModelPtr>& listModels) const;
 	void renderModel(ModelPtr pModel) const;
+
+	glm::mat4x4 viewMatrix(SceneLayer layer) const;
+	glm::mat4x4 projMatrix(SceneLayer layer) const;
 
 	ControllerPtr m_pController;
 	std::array<std::list<ModelPtr>, static_cast<size_t>(SceneLayer::Count)> m_objects;
