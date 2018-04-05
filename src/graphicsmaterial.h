@@ -28,7 +28,7 @@ private:
     GLuint m_id;
 
     friend class Controller;
-    friend class Scene;
+	friend class SceneLayer;
 };
 
 }

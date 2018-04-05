@@ -1,15 +1,8 @@
-#include <QGLContext>
-#include <QGLFunctions>
-#include <QImage>
-
-#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "graphicscontroller.h"
 #include "graphicsscene.h"
-#include "graphicsmodel.h"
-#include "graphicsmesh.h"
-#include "graphicsmaterial.h"
+#include "graphicsscenelayer.h"
 
 namespace graphics {
 
@@ -20,202 +13,47 @@ Scene::~Scene()
 
 void Scene::clear()
 {
-	for (auto& list: m_objects)
-		list.clear();
+	for (auto pLayer: m_layers)
+		pLayer->clear();
 }
 
-ModelPtr Scene::addModel(SceneLayer layer, MaterialPtr pMaterial, MeshPtr pMesh)
+SceneLayerPtr Scene::layer(SceneLayerId id)
 {
-	auto pModel = ModelPtr(new Model(shared_from_this(), pMaterial, pMesh));
-	m_objects[static_cast<size_t>(layer)].push_back(pModel);
-	return pModel;
+	return m_layers[static_cast<int32_t>(id)];
 }
 
 void Scene::setViewMatrix(const glm::mat4x4& value)
 {
-	m_viewMatrix = value;
+	m_layers[static_cast<int32_t>(SceneLayerId::Objects)]->setViewMatrix(value);
 }
 
-ModelPtr Scene::selectObject(SceneLayer layer, int32_t x, int32_t y)
-{
-	auto viewport = m_pController->viewport();
-	auto funcs = m_pController->context()->functions();
-	GLuint framebuffer, depthRenderbuffer, colorTexture;
-
-	funcs->glGenRenderbuffers(1, &depthRenderbuffer);
-	funcs->glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
-	funcs->glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, viewport[2], viewport[3]);
-
-	glGenTextures(1, &colorTexture);
-	glBindTexture(GL_TEXTURE_2D, colorTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, viewport[2], viewport[3], 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	funcs->glGenFramebuffers(1, &framebuffer);
-	funcs->glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
-	funcs->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
-
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClearDepth(1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glDepthMask(GL_TRUE);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(glm::value_ptr(projMatrix(layer)));
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(viewMatrix(layer)));
-
-	auto& objectsList = m_objects[static_cast<size_t>(layer)];
-	uint32_t objectId = 0;
-	for (auto pModel: objectsList) {
-		funcs->glBindBuffer(GL_ARRAY_BUFFER, pModel->m_pMesh->m_vertexBuffer);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 8*sizeof(float), (const GLvoid*)(0*sizeof(float)));
-		glDisableClientState(GL_NORMAL_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		funcs->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pModel->m_pMesh->m_indexBuffer);
-
-		uint8_t r = (objectId & 0xFF000000) >> 24;
-		uint8_t g = (objectId & 0x00FF0000) >> 16;
-		uint8_t b = (objectId & 0x0000FF00) >> 8;
-		uint8_t a = (objectId & 0x000000FF);
-		++objectId;
-		glColor4ub(r,g,b,a);
-
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glMultMatrixf(glm::value_ptr(pModel->transformMatrix()));
-		glDrawElements(GL_TRIANGLES, pModel->m_pMesh->m_numIndices, GL_UNSIGNED_INT, 0);
-		glPopMatrix();
-	}
-	glColor4ub(255,255,255,255);
-	objectId = -1;
-
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(x, viewport[3]-y-1, 1, 1, GL_ABGR_EXT, GL_UNSIGNED_BYTE, &objectId);
-
-	funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
-	funcs->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
-	funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	funcs->glDeleteFramebuffers(1, &framebuffer);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDeleteTextures(1, &colorTexture);
-
-	funcs->glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	funcs->glDeleteRenderbuffers(1, &depthRenderbuffer);
-
-
-	if (objectId == -1)
-		return nullptr;
-	else {
-		auto iter = objectsList.begin();
-		std::advance(iter, objectId);
-		return *iter;
-	}
-}
 
 Scene::Scene(ControllerPtr pController) :
-	m_pController(pController),
-	m_objects(),
-	m_viewMatrix()
+	m_pController(pController)
 {
-
+	m_layers[static_cast<size_t>(SceneLayerId::Background)] = SceneLayerPtr(new SceneLayer(pController, ProgramId::Rectangle));
+	m_layers[static_cast<size_t>(SceneLayerId::Objects)] = SceneLayerPtr(new SceneLayer(pController, ProgramId::Object));
+	m_layers[static_cast<size_t>(SceneLayerId::GUI)] = SceneLayerPtr(new SceneLayer(pController, ProgramId::Rectangle));
 }
 
 void Scene::render() const
 {
-	using RenderFunc = void (Scene::*)(const std::list<ModelPtr>&) const;
-	static const RenderFunc funcs[] = {
-		&Scene::renderBackground,
-		&Scene::renderObjects,
-		&Scene::renderGUI
-	};
-
-	for (size_t i = 0; i < static_cast<size_t>(SceneLayer::Count); ++i) {
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(glm::value_ptr(projMatrix(static_cast<SceneLayer>(i))));
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(glm::value_ptr(viewMatrix(static_cast<SceneLayer>(i))));
-
-		(this->*funcs[i])(m_objects[i]);
+	for (int32_t i = 0; i < static_cast<int32_t>(SceneLayerId::Count); ++i) {
+		auto id = static_cast<SceneLayerId>(i);
+		m_layers[i]->setProjMatrix(projMatrix(id));
+		m_layers[i]->enableDepthTest(depthTestState(id));
+		m_layers[i]->render();
 	}
 }
 
-void Scene::renderBackground(const std::list<ModelPtr>& listModels) const
-{
-	glDisable(GL_DEPTH_TEST);
-
-	for (auto pModel: listModels)
-		renderModel(pModel);
-}
-
-void Scene::renderObjects(const std::list<ModelPtr>& listModels) const
-{
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-
-	for (auto pModel: listModels)
-		renderModel(pModel);
-
-}
-
-void Scene::renderGUI(const std::list<ModelPtr>& listModels) const
-{
-	glDisable(GL_DEPTH_TEST);
-
-	for (auto pModel: listModels)
-		renderModel(pModel);
-}
-
-void Scene::renderModel(ModelPtr pModel) const
-{
-	auto funcs = m_pController->context()->functions();
-
-	funcs->glBindBuffer(GL_ARRAY_BUFFER, pModel->m_pMesh->m_vertexBuffer);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 8*sizeof(float), (const GLvoid*)(0*sizeof(float)));
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glNormalPointer(GL_FLOAT, 8*sizeof(float), (const GLvoid*)(3*sizeof(float)));
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, 8*sizeof(float), (const GLvoid*)(6*sizeof(float)));
-	funcs->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pModel->m_pMesh->m_indexBuffer);
-
-	glBindTexture(GL_TEXTURE_2D, pModel->m_pMaterial->m_id);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glMultMatrixf(glm::value_ptr(pModel->transformMatrix()));
-
-	glDrawElements(GL_TRIANGLES, pModel->m_pMesh->m_numIndices, GL_UNSIGNED_INT, 0);
-
-	glPopMatrix();
-}
-
-glm::mat4x4 Scene::viewMatrix(SceneLayer layer) const
-{
-	switch (layer) {
-		case SceneLayer::Background : return glm::mat4x4();
-		case SceneLayer::Objects: return m_viewMatrix;
-		case SceneLayer::GUI: return glm::mat4x4();
-	}
-	return glm::mat4x4();
-}
-
-glm::mat4x4 Scene::projMatrix(SceneLayer layer) const
+glm::mat4x4 Scene::projMatrix(SceneLayerId layer) const
 {
 	auto viewport = m_pController->viewport();
 
 	switch (layer) {
-		case SceneLayer::Background : return glm::mat4x4();
-		case SceneLayer::Objects: return glm::perspective(0.4f*glm::pi<float>(), (float)viewport[2]/(float)viewport[3], 0.5f, 100.0f);
-		case SceneLayer::GUI: {
+		case SceneLayerId::Background : return glm::mat4x4();
+		case SceneLayerId::Objects: return glm::perspective(0.4f*glm::pi<float>(), (float)viewport[2]/(float)viewport[3], 0.5f, 100.0f);
+		case SceneLayerId::GUI: {
 			const auto aspect = (float)viewport[2]/(float)viewport[3];
 			if (aspect >= 1.0f)
 				return glm::ortho(-aspect, aspect, -1.0f, 1.0f);
@@ -224,6 +62,16 @@ glm::mat4x4 Scene::projMatrix(SceneLayer layer) const
 		}
 	}
 	return glm::mat4x4();
+}
+
+bool Scene::depthTestState(SceneLayerId layer) const
+{
+	switch (layer) {
+		case SceneLayerId::Background : return false;
+		case SceneLayerId::Objects: return true;
+		case SceneLayerId::GUI: return false;
+	}
+	return false;
 }
 
 }

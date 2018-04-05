@@ -2,6 +2,7 @@
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QOpenGLContext>
 
 #include "gamewidget.h"
 #include "graphicscontroller.h"
@@ -12,13 +13,19 @@
 namespace game {
 
 GameWidget::GameWidget(QWidget *parent) :
-	QGLWidget(parent),
+	QOpenGLWidget(parent),
 	m_pTimer(new QTimer(this)),
 	m_pRenderer(),
 	m_pGame(),
 	m_startTime(QDateTime::currentMSecsSinceEpoch()),
 	m_lastUpdateTime(0)
 {
+	QSurfaceFormat format;
+	format.setVersion(3, 3);
+	format.setProfile(QSurfaceFormat::CoreProfile);
+	format.setSamples(16);
+	setFormat(format);
+
 	connect(m_pTimer, SIGNAL(timeout()), SLOT(update()));
 	m_pTimer->start(16);
 
@@ -80,6 +87,7 @@ void GameWidget::mousePressEvent(QMouseEvent* pEvent)
 	m_mouseX = pEvent->x();
 	m_mouseY = pEvent->y();
 
+	context()->makeCurrent(context()->surface());
 	auto pGame = m_pGame.lock();
 	if (pGame)
 		pGame->mouseClick(m_mouseX, m_mouseY, pEvent->buttons() & Qt::LeftButton, pEvent->buttons() & Qt::RightButton);

@@ -83,7 +83,8 @@ void Game15::initialize()
 	auto pVictoryScene = new Game15SceneVictory(shared_from_this());
 	m_scenes[static_cast<size_t>(GameSceneId::Victory)] = std::unique_ptr<Game15AbstractScene>(pVictoryScene);
 
-	setCurrentScene(GameSceneId::Menu);
+	pGameScene->initialize(4);
+	setCurrentScene(GameSceneId::Game);
 }
 
 Game15::~Game15()

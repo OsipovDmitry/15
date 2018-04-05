@@ -8,9 +8,6 @@
 
 namespace graphics {
 
-class Scene;
-using ScenePtr = std::shared_ptr<Scene>;
-
 class Material;
 using MaterialPtr = std::shared_ptr<Material>;
 
@@ -33,9 +30,8 @@ public:
 	void setUserData(int32_t val);
 
 private:
-    Model(ScenePtr pScene, MaterialPtr pMaterial, MeshPtr pMesh);
+	Model(MaterialPtr pMaterial, MeshPtr pMesh);
 
-    ScenePtr m_pScene;
     MaterialPtr m_pMaterial;
     MeshPtr m_pMesh;
 
@@ -43,7 +39,7 @@ private:
 
 	int32_t m_userData;
 
-    friend class Scene;
+	friend class SceneLayer;
 };
 
 }

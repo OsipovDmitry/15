@@ -19,11 +19,11 @@ private:
     Mesh(ControllerPtr pController, const std::vector<float>& vertices, const std::vector<uint32_t> indices);
 
     ControllerPtr m_pController;
-    GLuint m_vertexBuffer, m_indexBuffer;
+	GLuint m_vertexArray, m_vertexBuffer, m_indexBuffer;
     uint32_t m_numIndices;
 
     friend class Controller;
-    friend class Scene;
+	friend class SceneLayer;
 };
 
 }

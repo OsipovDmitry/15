@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 class QTimer;
 
@@ -20,7 +20,7 @@ class AbstractGame;
 using AbstractGamePtr = std::shared_ptr<AbstractGame>;
 using AbstractGameWPtr = std::weak_ptr<AbstractGame>;
 
-class GameWidget : public QGLWidget {
+class GameWidget : public QOpenGLWidget {
 public:
     GameWidget(QWidget *parent = nullptr);
     ~GameWidget();

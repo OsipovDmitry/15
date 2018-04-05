@@ -59,8 +59,7 @@ void Model::setUserData(int32_t val)
 	m_userData = val;
 }
 
-Model::Model(ScenePtr pScene, MaterialPtr pMaterial, MeshPtr pMesh) :
-	m_pScene(pScene),
+Model::Model(MaterialPtr pMaterial, MeshPtr pMesh) :
 	m_pMaterial(pMaterial),
 	m_pMesh(pMesh),
 	m_position(),

@@ -4,6 +4,7 @@
 
 #include "graphicscontroller.h"
 #include "graphicsscene.h"
+#include "graphicsscenelayer.h"
 #include "graphicsmodel.h"
 
 #include "meshdata.h"
@@ -26,6 +27,10 @@ void Game15SceneGame::update(uint64_t time, uint32_t dt)
 	auto pGame15 = m_pGame15.lock();
 	if (!pGame15)
 		return;
+
+	const glm::vec4 lightPos(m_gameConst/2 * glm::cos(time*0.001f), 2.0f, m_gameConst/2 * glm::sin(time*0.001f), 1.0f);
+	m_pGraphicsScene->layer(graphics::SceneLayerId::Objects)->setParam("u_lightPos", lightPos);
+
 
 	m_pGraphicsScene->setViewMatrix(
 				glm::translate(glm::mat4x4(), glm::vec3(0,0,-m_cameraDist)) *
@@ -61,8 +66,8 @@ void Game15SceneGame::mouseClick(int32_t x, int32_t y, bool leftButton, bool rig
 	if (!pGame15)
 		return;
 
-	auto pGUIObject = m_pGraphicsScene->selectObject(graphics::SceneLayer::GUI, x, y);
-	auto pGameObject = m_pGraphicsScene->selectObject(graphics::SceneLayer::Objects, x, y);
+	auto pGUIObject = m_pGraphicsScene->layer(graphics::SceneLayerId::GUI)->selectModel(x, y);
+	auto pGameObject = m_pGraphicsScene->layer(graphics::SceneLayerId::Objects)->selectModel(x, y);
 
 	if (pGUIObject == m_pToMenuButton) {
 		pGame15->setCurrentScene(GameSceneId::Menu);
@@ -176,14 +181,14 @@ void Game15SceneGame::initialize(int32_t gameConst)
 	auto pGame15 = m_pGame15.lock();
 	auto pRenderer = pGame15->graphicsController();
 
-	m_pGraphicsScene->addModel(graphics::SceneLayer::Background, pGame15->material(GameMaterialId::Background), pGame15->mesh(GameMeshId::QuadXY));
-	m_pGraphicsScene->addModel(graphics::SceneLayer::Objects, pGame15->material(GameMaterialId::Wood), pRenderer->createMesh(tableVertices(gameConst), tableIndices));
+	m_pGraphicsScene->layer(graphics::SceneLayerId::Background)->addModel(pGame15->material(GameMaterialId::Background), pGame15->mesh(GameMeshId::QuadXY));
+	m_pGraphicsScene->layer(graphics::SceneLayerId::Objects)->addModel(pGame15->material(GameMaterialId::Wood), pRenderer->createMesh(tableVertices(gameConst), tableIndices));
 
-	m_pToMenuButton = m_pGraphicsScene->addModel(graphics::SceneLayer::GUI, pGame15->material(GameMaterialId::ButtonToMenu), pGame15->mesh(GameMeshId::Button));
+	m_pToMenuButton = m_pGraphicsScene->layer(graphics::SceneLayerId::GUI)->addModel(pGame15->material(GameMaterialId::ButtonToMenu), pGame15->mesh(GameMeshId::Button));
 	m_pToMenuButton->setPosition(glm::vec3(0.75f, 0.85f, 0.0f));
 
 	for (auto i = 0; i < gameConst*gameConst-1; ++i) {
-		auto pBlockModel = m_pGraphicsScene->addModel(graphics::SceneLayer::Objects, pGame15->material(static_cast<GameMaterialId>(static_cast<uint32_t>(GameMaterialId::Block0)+i)), pGame15->mesh(GameMeshId::Block));
+		auto pBlockModel = m_pGraphicsScene->layer(graphics::SceneLayerId::Objects)->addModel(pGame15->material(static_cast<GameMaterialId>(static_cast<uint32_t>(GameMaterialId::Block0)+i)), pGame15->mesh(GameMeshId::Block));
 		pBlockModel->setUserData(i);
 		m_table.push_back(pBlockModel);
 	}
