@@ -18,7 +18,7 @@ using MeshPtr = std::shared_ptr<Mesh>;
 
 }
 
-namespace game {
+namespace game15 {
 
 enum class GameMaterialId : uint32_t {
     Background,
@@ -64,7 +64,7 @@ using Game15AbstractScenePtr = std::shared_ptr<Game15AbstractScene>;
 class Game15;
 using Game15Ptr = std::shared_ptr<Game15>;
 
-class Game15 : public AbstractGame, public std::enable_shared_from_this<Game15> {
+class Game15 : public game::AbstractGame, public std::enable_shared_from_this<Game15> {
 public:
     ~Game15();
 

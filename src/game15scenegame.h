@@ -14,7 +14,7 @@ using ModelPtr = std::shared_ptr<Model>;
 
 }
 
-namespace game {
+namespace game15 {
 
 class Game15SceneGame : public Game15AbstractScene
 {

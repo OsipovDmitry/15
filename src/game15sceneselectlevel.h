@@ -11,7 +11,7 @@ using ModelPtr = std::shared_ptr<Model>;
 
 }
 
-namespace game {
+namespace game15 {
 
 class Game15SceneSelectLevel : public Game15AbstractScene
 {

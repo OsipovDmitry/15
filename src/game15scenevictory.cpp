@@ -6,7 +6,7 @@
 #include "game15.h"
 #include "game15scenevictory.h"
 
-namespace game {
+namespace game15 {
 
 Game15SceneVictory::~Game15SceneVictory()
 {

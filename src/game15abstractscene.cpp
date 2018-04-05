@@ -4,7 +4,7 @@
 #include "game15abstractscene.h"
 #include "game15.h"
 
-namespace game {
+namespace game15 {
 
 Game15AbstractScene::~Game15AbstractScene()
 {

@@ -17,7 +17,7 @@
 #include "game15sceneselectlevel.h"
 #include "game15scenevictory.h"
 
-namespace game {
+namespace game15 {
 
 namespace {
 const std::array<QString, static_cast<size_t>(GameMaterialId::ButtonCount)-static_cast<size_t>(GameMaterialId::ButtonStart)> buttonLabels {
@@ -31,7 +31,7 @@ const std::array<QString, static_cast<size_t>(GameMaterialId::ButtonCount)-stati
 }
 
 Game15::Game15(graphics::ControllerPtr pRenderer) :
-	AbstractGame(pRenderer)
+	game::AbstractGame(pRenderer)
 {
 }
 
@@ -83,8 +83,7 @@ void Game15::initialize()
 	auto pVictoryScene = new Game15SceneVictory(shared_from_this());
 	m_scenes[static_cast<size_t>(GameSceneId::Victory)] = std::unique_ptr<Game15AbstractScene>(pVictoryScene);
 
-	pGameScene->initialize(4);
-	setCurrentScene(GameSceneId::Game);
+	setCurrentScene(GameSceneId::Menu);
 }
 
 Game15::~Game15()

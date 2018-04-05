@@ -7,7 +7,7 @@
 
 #include "game15sceneselectlevel.h"
 
-namespace game {
+namespace game15 {
 
 Game15SceneSelectLevel::~Game15SceneSelectLevel()
 {

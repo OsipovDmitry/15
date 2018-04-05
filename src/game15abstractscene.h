@@ -10,7 +10,7 @@ using ScenePtr = std::shared_ptr<Scene>;
 
 }
 
-namespace game {
+namespace game15 {
 
 class Game15;
 using Game15Ptr = std::shared_ptr<Game15>;
