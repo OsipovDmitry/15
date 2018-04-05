@@ -6,7 +6,6 @@ namespace graphics {
 
 Model::~Model()
 {
-	int i = 123;
 }
 
 glm::vec3 Model::position() const

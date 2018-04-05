@@ -8,7 +8,6 @@ namespace graphics {
 
 Scene::~Scene()
 {
-	int i = 123;
 }
 
 void Scene::clear()
@@ -60,6 +59,7 @@ glm::mat4x4 Scene::projMatrix(SceneLayerId layer) const
 			else
 				return glm::ortho(-1.0f, 1.0f, -1.0f/aspect, 1.0f/aspect);
 		}
+		default: break;
 	}
 	return glm::mat4x4();
 }
@@ -70,6 +70,7 @@ bool Scene::depthTestState(SceneLayerId layer) const
 		case SceneLayerId::Background : return false;
 		case SceneLayerId::Objects: return true;
 		case SceneLayerId::GUI: return false;
+		default: break;
 	}
 	return false;
 }

@@ -34,7 +34,6 @@ GameWidget::GameWidget(QWidget *parent) :
 
 GameWidget::~GameWidget()
 {
-	int i = 123;
 }
 
 graphics::ControllerPtr GameWidget::graphicsController() const
