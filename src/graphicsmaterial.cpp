@@ -8,7 +8,8 @@ namespace graphics {
 
 Material::~Material()
 {
-    glDeleteTextures(1, &m_id);
+	auto funcs = m_pController->functions();
+	funcs->glDeleteTextures(1, &m_id);
 }
 
 Material::Material(ControllerPtr pController, const std::string& filename) :
