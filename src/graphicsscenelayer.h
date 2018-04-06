@@ -49,7 +49,7 @@ private:
 	glm::mat4x4 m_viewMatrix, m_projMatrix;
 	std::unordered_map<std::string, glm::vec4> m_params;
 	GLuint m_program, m_selectProgram;
-	GLint m_modelMatrixLoc, m_viewMatrixLoc, m_projMatrixLoc, m_textureLoc;
+	GLint m_modelMatrixLoc, m_normalMatrixLoc, m_viewMatrixLoc, m_projMatrixLoc, m_textureLoc;
 	GLint m_selectModelMatrixLoc, m_selectViewMatrixLoc, m_selectProjMatrixLoc, m_selectColorLoc;
 	bool m_depthTestState;
 

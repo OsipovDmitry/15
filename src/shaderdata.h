@@ -13,6 +13,7 @@ const std::string rectangleVertexShader(
 	"uniform mat4x4 u_modelMatrix;\n"
 	"uniform mat4x4 u_viewMatrix;\n"
 	"uniform mat4x4 u_projMatrix;\n"
+	"uniform mat3x3 u_normalMatrix;\n"
 
 	"out vec2 v_texcoord;\n"
 
@@ -48,6 +49,7 @@ const std::string objectVertexShader(
 	"uniform mat4x4 u_modelMatrix;\n"
 	"uniform mat4x4 u_viewMatrix;\n"
 	"uniform mat4x4 u_projMatrix;\n"
+	"uniform mat3x3 u_normalMatrix;\n"
 	"uniform vec4 u_lightPos = vec4(0.0, 2.0, 0.0, 1.0);\n"
 
 	"out vec3 v_normal;\n"
@@ -58,7 +60,7 @@ const std::string objectVertexShader(
 	"{\n"
 	"   vec4 worldPos = u_modelMatrix * vec4(a_position, 1.0);\n"
 	"	gl_Position = u_projMatrix * u_viewMatrix * worldPos;\n"
-	"	v_normal = a_normal;\n"
+	"	v_normal = u_normalMatrix * a_normal;\n"
 	"	v_texcoord = a_texcoord;\n"
 	"   v_light = normalize(u_lightPos.xyz - worldPos.xyz);\n"
 	"}\n"

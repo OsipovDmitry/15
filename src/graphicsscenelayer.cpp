@@ -1,7 +1,9 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QImage>
 
+#include "glm/mat3x3.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/matrix_inverse.hpp"
 
 #include "graphicscontroller.h"
 #include "graphicsscenelayer.h"
@@ -115,6 +117,7 @@ SceneLayer::SceneLayer(ControllerPtr pController, ProgramId programId) :
 
 	m_program = m_pController->program(programId);
 	m_modelMatrixLoc = funcs->glGetUniformLocation(m_program, "u_modelMatrix");
+	m_normalMatrixLoc = funcs->glGetUniformLocation(m_program, "u_normalMatrix");
 	m_viewMatrixLoc = funcs->glGetUniformLocation(m_program, "u_viewMatrix");
 	m_projMatrixLoc = funcs->glGetUniformLocation(m_program, "u_projMatrix");
 	m_textureLoc = funcs->glGetUniformLocation(m_program, "u_texture");
@@ -150,7 +153,10 @@ void SceneLayer::render() const
 	funcs->glActiveTexture(GL_TEXTURE0);
 
 	for (auto pModel: m_models) {
-		funcs->glUniformMatrix4fv(m_modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(pModel->transformMatrix()));
+		auto modelMatrix = pModel->transformMatrix();
+		auto normalMatrix = glm::inverseTranspose(glm::mat3x3(modelMatrix));
+		funcs->glUniformMatrix4fv(m_modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		funcs->glUniformMatrix3fv(m_normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
 
 		funcs->glBindTexture(GL_TEXTURE_2D, pModel->m_pMaterial->m_id);
 
