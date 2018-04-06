@@ -194,14 +194,11 @@ void Game15SceneGame::initialize(int32_t gameConst)
 	}
 	m_table.push_back(nullptr);
 
-	for (int32_t i = 0; i < 1000; ++i) {
-		int32_t emptyX, emptyY;
-		findEmpty(emptyX, emptyY);
-		if (rand()%2)
-			moveTable(emptyX, rand()%m_gameConst);
-		else
-			moveTable(rand()%m_gameConst, emptyY);
-	}
+	for (int32_t i = 0; i < 1000; ++i)
+		shuffle();
+
+	while (checkWin())
+		shuffle();
 
 	calibrate();
 
@@ -209,6 +206,16 @@ void Game15SceneGame::initialize(int32_t gameConst)
 	m_cameraLong = 330.0f;
 	m_cameraDist = m_gameConst/1.2f+1;
 	m_state = State::Wait;
+}
+
+void Game15SceneGame::shuffle()
+{
+	int32_t emptyX, emptyY;
+	findEmpty(emptyX, emptyY);
+	if (rand()%2)
+		moveTable(emptyX, rand()%m_gameConst);
+	else
+		moveTable(rand()%m_gameConst, emptyY);
 }
 
 void Game15SceneGame::moveTable(int32_t objX, int32_t objY)

@@ -38,7 +38,7 @@ Game15SceneVictory::Game15SceneVictory(Game15Ptr pGame15) :
 	m_pGraphicsScene->layer(graphics::SceneLayerId::Background)->addModel(pGame15->material(GameMaterialId::Background), pGame15->mesh(GameMeshId::QuadXY));
 
 	m_pVictoryButton = m_pGraphicsScene->layer(graphics::SceneLayerId::GUI)->addModel(pGame15->material(GameMaterialId::ButtonVictory), pGame15->mesh(GameMeshId::Button));
-	m_pVictoryButton->setPosition(glm::vec3(0.0f, 0.3f, 0.0f));
+	m_pVictoryButton->setPosition(glm::vec3(0.0f, 0.2f, 0.0f));
 }
 
 

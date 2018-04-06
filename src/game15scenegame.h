@@ -36,6 +36,7 @@ private:
 
 	Game15SceneGame(Game15Ptr pGame15);
 	void initialize(int32_t gameConst);
+	void shuffle();
 	void moveTable(int32_t x, int32_t y);
 	void findEmpty(int32_t& x, int32_t& y);
 	bool checkWin() const;
